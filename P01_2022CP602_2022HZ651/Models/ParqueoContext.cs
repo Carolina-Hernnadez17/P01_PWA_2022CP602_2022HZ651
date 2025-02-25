@@ -11,6 +11,6 @@ namespace P01_2022CP602_2022HZ651.Models
         public DbSet<Usuarios> usuarios { get; set; }
         public DbSet<Sucursales> sucursales { get; set; }
         public DbSet<Reservas> reservas { get; set; }
-        public DbSet<EspaciosParqueo> espaciosParqueos { get; set; }
+        public DbSet<EspaciosParqueo> EspaciosParqueo { get; set; }
     }
 }
