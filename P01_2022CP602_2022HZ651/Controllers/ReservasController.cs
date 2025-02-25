@@ -36,7 +36,7 @@ namespace P01_2022CP602_2022HZ651.Controllers
             else
             {
                 // Espacio disponible
-                var espacioDisponible = _ParqueoContexto.espaciosParqueos
+                var espacioDisponible = _ParqueoContexto.EspaciosParqueo
                     .Where(ep => ep.Id_espacioparqueo == idEspacio && ep.Estado == "Disponible")
                     .FirstOrDefault();
 
@@ -70,7 +70,7 @@ namespace P01_2022CP602_2022HZ651.Controllers
                         _ParqueoContexto.reservas.Add(reserva);
                         _ParqueoContexto.SaveChanges();
 
-                        espacioDisponible.Estado = "Reservado";
+                        espacioDisponible.Estado = "Ocupado";
                         _ParqueoContexto.SaveChanges();
 
                         sucursal.EspaciosDisponibles--;
@@ -87,6 +87,72 @@ namespace P01_2022CP602_2022HZ651.Controllers
 
             }
             
+        }
+        /// <summary>
+        /// EndPoint Mostrar una lista de reservas activas del usuario.
+        /// </summary>
+        /// <returns></returns>
+
+        [HttpGet("ReservasActivas/{idUsuario}")]
+        public IActionResult ObtenerReservasActivas(int idUsuario)
+        {
+            var reservasActivas = (from reserva in _ParqueoContexto.reservas
+                                   join usuario in _ParqueoContexto.usuarios on reserva.Id_usuario equals usuario.Id_usuario
+                                   join espacio in _ParqueoContexto.EspaciosParqueo on reserva.Id_espacioparqueo equals espacio.Id_espacioparqueo
+                                   where reserva.Id_usuario == idUsuario && reserva.Estado == "Activa"
+                                   select new
+                                   {
+                                       reserva.Id_reservas,
+                                       reserva.Fecha,
+                                       reserva.HoraInicio,
+                                       reserva.CantidadHoras,
+                                       reserva.Estado,
+                                       UsuarioNombre = usuario.Nombre,
+                                       UsuarioCorreo = usuario.Correo,
+                                       UsuarioTelefono = usuario.Telefono,
+                                       EspacioNumero = espacio.Numero,
+                                       EspacioUbicacion = espacio.Ubicacion,
+                                       EspacioCostoPorHora = espacio.CostoPorHora,
+                                       EspacioEstado = espacio.Estado
+                                   }).ToList();
+
+            if (reservasActivas == null || reservasActivas.Count == 0)
+            {
+                return NotFound("No se encontraron reservas con ese id");
+            }
+
+            return Ok(reservasActivas);
+        }
+        [HttpGet]
+        [Route("getBycliente/{nombreCliente}")]
+        public IActionResult GetByCliente(string nombreCliente)
+        {
+            var resultado = (from reserva in _ParqueoContexto.reservas
+                             join usuario in _ParqueoContexto.usuarios on reserva.Id_usuario equals usuario.Id_usuario
+                             join espacio in _ParqueoContexto.EspaciosParqueo on reserva.Id_espacioparqueo equals espacio.Id_espacioparqueo
+                             where usuario.Nombre == nombreCliente && reserva.Estado == "Activa"
+                             select new
+                             {
+                                 reserva.Id_reservas,
+                                 reserva.Fecha,
+                                 reserva.HoraInicio,
+                                 reserva.CantidadHoras,
+                                 reserva.Estado,
+                                 UsuarioNombre = usuario.Nombre,
+                                 UsuarioCorreo = usuario.Correo,
+                                 UsuarioTelefono = usuario.Telefono,
+                                 EspacioNumero = espacio.Numero,
+                                 EspacioUbicacion = espacio.Ubicacion,
+                                 EspacioCostoPorHora = espacio.CostoPorHora,
+                                 EspacioEstado = espacio.Estado
+                             }).ToList();
+
+            if (!resultado.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(resultado);
         }
 
 
