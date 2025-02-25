@@ -17,6 +17,35 @@ namespace P01_2022CP602_2022HZ651.Controllers
         }
 
         [HttpGet]
+        [Route("PorSucursal/{id_sucursal}")]
+        public IActionResult EspaciosPorSucursal(int id_sucursal)
+        {
+            var espacios = (from espacio in _context.EspaciosParqueo
+                            join sucursal in _context.sucursales
+                              on espacio.Id_sucursal equals sucursal.Id_sucursal
+                            where espacio.Id_sucursal == id_sucursal
+                            select new
+                            {
+                                espacio.Id_espacioparqueo,
+                                espacio.Numero,
+                                espacio.Ubicacion,
+                                espacio.CostoPorHora,
+                                espacio.Estado,
+                                Sucursal = sucursal.Nombre
+                            }).ToList();
+
+            if (!espacios.Any())
+            {
+                return NotFound($"No se encontraron espacios de parqueo para la sucursal con ID {id_sucursal}.");
+            }
+
+            return Ok(espacios);
+        }
+
+
+
+        //EndPoint para mostrar solo los  espacio de parqueo parqueo dispoonibles
+        [HttpGet]
         [Route("GetAll")]
         public IActionResult GetAllEspaciosParqueo()
         {
@@ -44,6 +73,7 @@ namespace P01_2022CP602_2022HZ651.Controllers
             return Ok(EspaciosParqueo);
         }
 
+        //EndPoint para agregar los datos de espacio de parqueo
         [HttpPost]
         [Route("Add")]
         public IActionResult AddEspacioParqueo([FromBody] EspaciosParqueo nuevoEspacio)
@@ -73,6 +103,7 @@ namespace P01_2022CP602_2022HZ651.Controllers
             }
         }
 
+        //EndPoint para actualizar los datos de espacio de parqueo
         [HttpPut]
         [Route("Update/{id}")]
         public IActionResult UpdateEspacioParqueo(int id, [FromBody] EspaciosParqueo espacioModificar)
@@ -82,22 +113,23 @@ namespace P01_2022CP602_2022HZ651.Controllers
                 return BadRequest("El ID del espacio de parqueo no coincide.");
             }
 
-            var query = from espacio in _context.EspaciosParqueo
-                        join sucursal in _context.sucursales
-                          on espacio.Id_sucursal equals sucursal.Id_sucursal
-                        where espacio.Id_espacioparqueo == id
-                        select espacio;
-
-            var espacioActual = query.FirstOrDefault();
-
+            var sucursalExiste = _context.sucursales.Any(s => s.Id_sucursal == espacioModificar.Id_sucursal);
+            if (!sucursalExiste)
+            {
+                return NotFound($"No se encontró la sucursal con ID {espacioModificar.Id_sucursal}.");
+            }
+            
+            var espacioActual = _context.EspaciosParqueo.FirstOrDefault(x => x.Id_espacioparqueo == id);
             if (espacioActual == null)
             {
                 return NotFound($"No se encontró el espacio de parqueo con ID {id}.");
             }
 
+            espacioActual.Numero = espacioModificar.Numero;
             espacioActual.Estado = espacioModificar.Estado;
             espacioActual.Ubicacion = espacioModificar.Ubicacion;
             espacioActual.CostoPorHora = espacioModificar.CostoPorHora;
+            espacioActual.Id_sucursal = espacioModificar.Id_sucursal;
 
             _context.Entry(espacioActual).State = EntityState.Modified;
             _context.SaveChanges();
@@ -105,6 +137,7 @@ namespace P01_2022CP602_2022HZ651.Controllers
             return Ok(espacioActual);
         }
 
+        //EndPoint para eliminar los datos de espacio de parqueo
         [HttpDelete]
         [Route("Delete/{id}")]
         public IActionResult DeleteEspacioParqueo(int id)
