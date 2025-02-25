@@ -18,7 +18,7 @@ namespace P01_2022CP602_2022HZ651.Models
         public string Telefono { get; set; }
 
         public int Id_usuario { get; set; }
-
-        public int Id_espacioparqueo { get; set; }
+        [Required]
+        public int EspaciosDisponibles { get; set; }
     }
 }
