@@ -19,7 +19,7 @@ namespace P01_2022CP602_2022HZ651.Models
 
         public string Contrasena { get; set; }
         [Required]
-
+        [RegularExpression("^(Empleado|Usuario)$", ErrorMessage = "El rol debe ser 'Empleado' o 'Usuario'.")]
         public string Rol { get; set; }
     }
 }

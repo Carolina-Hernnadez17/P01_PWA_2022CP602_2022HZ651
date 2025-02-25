@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using P01_2022CP602_2022HZ651.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace P01_2022CP602_2022HZ651.Controllers
 {
@@ -114,10 +115,35 @@ namespace P01_2022CP602_2022HZ651.Controllers
 
             return Ok(usuario);
         }
+
         /// <summary>
-        /// EndPoint para retornar el listado de los platos filtrados cuando el precio sea menor de un valor dado.
+        /// EndPoint para Iniciar sesión con credenciales (usuario/contraseña) y retornar si son válidas o invalidas las credenciales.
         /// </summary>
         /// <returns></returns>
+        /// 
+        
+        [HttpGet]
+        [Route("InicioDeSesion/{usuario}/{contrasena}")]
+        public IActionResult IniciarSesion(string usuario, string contrasena)
+        {
+            var usuarioEncontrado = _ParqueoContexto.usuarios
+                .FirstOrDefault(u => u.Correo == usuario);
+
+            if (usuarioEncontrado == null)
+            {
+                return NotFound($"El correo '{usuario}' no existe.");
+            }
+
+            if (usuarioEncontrado.Contrasena != contrasena)
+            {
+                return Unauthorized("Contraseña incorrecta.");
+            }
+
+            return Ok("Inicio de sesión válido");
+        }
+
+
+
 
     }
 }
